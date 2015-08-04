@@ -1,0 +1,20 @@
+#grid {
+    margin: auto;
+    border: 1px;
+}
+td {
+    width: 10px;
+    height: 10px;
+}
+#grid, td, th {
+    border-spacing: 0px;
+    border: 1px solid lightgray;
+}
+.deadCell {
+    background-color: lightblue;
+    border-color: lightblue;
+}
+.liveCell {
+    background-color: cornflowerblue;
+    border-color: cornflowerblue;
+}
