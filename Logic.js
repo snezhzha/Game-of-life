@@ -8,7 +8,7 @@ var generationsModel = {
         [0, 0, 1, 0, 0],
         [0, 0, 0, 0, 0]
     ],
-    newGeneration: [
+    tmpGeneration: [
         [0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0],
@@ -65,16 +65,16 @@ var generationsModel = {
                         newState = 1;
                     }
                 }
-                this.newGeneration[x][y] = newState;
+                this.tmpGeneration[x][y] = newState;
             }
         }
 
         var tmp = this.currGeneration;
-        this.currGeneration = this.newGeneration;
-        this.newGeneration = tmp;
+        this.currGeneration = this.tmpGeneration;
+        this.tmpGeneration = tmp;
     },
 
-    addFigureToGrid: function () {
+    updateGrid: function () {
         var table = document.getElementById("grid");
         for (var i = 0; i < this.currGeneration.length; i++) {
             for (var j = 0; j < this.currGeneration[i].length; j++) {
@@ -112,7 +112,7 @@ var view = {
         window.onload = init;
         function init() {
             view.createGrid(model.gridSize, model.gridSize);
-            model.addFigureToGrid();
+            model.updateGrid();
         }
 
 
