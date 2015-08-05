@@ -6,12 +6,12 @@ var generationsModel = {
     createEmptyGridArray: function (size) {
         var arr = [];
         // Creates all lines:
-        for(var i=0; i < size; i++){
+        for (var i = 0; i < size; i++) {
             // Creates an empty line
             arr.push([]);
             // Adds cols to the empty line:
-            arr[i].push( new Array(size));
-            for(var j=0; j < size; j++){
+            arr[i].push(new Array(size));
+            for (var j = 0; j < size; j++) {
                 // Initializes:
                 arr[i][j] = 0;
             }
@@ -19,7 +19,7 @@ var generationsModel = {
         return arr;
     },
 
-    createCurrAndTmpGenerationContainers: function() {
+    createCurrAndTmpGenerationContainers: function () {
         this.currGeneration = this.createEmptyGridArray(view.gridSize);
         this.tmpGeneration = this.createEmptyGridArray(view.gridSize);
     },
@@ -96,7 +96,7 @@ var view = {
         document.getElementById("playingField").appendChild(table);
     },
 
-    addOnclickEventToCells: function() {
+    addOnclickEventToCells: function () {
         var table = document.getElementById("grid");
         for (var i = 0; i < generationsModel.currGeneration.length; i++) {
             for (var j = 0; j < generationsModel.currGeneration[i].length; j++) {
@@ -105,7 +105,7 @@ var view = {
         }
     },
 
-    handleClick: function(e) {
+    handleClick: function (e) {
         var x, y, cell = e.target, row;
 
         cell.setAttribute("class", "liveCell");
@@ -114,14 +114,17 @@ var view = {
         x = e.srcElement.getAttribute("id");
 
         generationsModel.currGeneration[y][x] = 1;
-        var startButton = document.getElementById("Start");
+        generationsModel.liveCellsCounter++;
+        var startButton = document.getElementsByTagName("input")[0];
         startButton.focus();
     },
 
     updateGrid: function () {
+
         var table = document.getElementById("grid");
         this.cleanGrid();
         generationsModel.liveCellsCounter = 0;
+
         for (var i = 0; i < generationsModel.currGeneration.length; i++) {
             for (var j = 0; j < generationsModel.currGeneration[i].length; j++) {
                 if (generationsModel.currGeneration[i][j] === 1) {
@@ -145,16 +148,19 @@ var view = {
         }
     },
 
-    displayMessage: function(message) {
-        var  field = document.getElementById("messageArea");
+    displayMessage: function (message) {
+        var field = document.getElementById("messageArea");
         field.innerHTML = message;
     }
 };
 
 var controller = {
-  checkGameOver: function(){
-
-  }
+    checkGameOver: function () {
+        if (generationsModel.liveCellsCounter === 0) {
+            return true;
+        }
+        return false;
+    }
 };
 
 window.onload = init;
@@ -163,17 +169,25 @@ function init() {
     view.displayMessage("Hello! Draw the body, press Start and see what will be!");
     generationsModel.createCurrAndTmpGenerationContainers();
     view.addOnclickEventToCells();
+
     var startButton = document.getElementById("Start");
     startButton.onkeydown = handleKeyDown;
     startButton.onclick = handleButtonClick;
 }
 
 function handleButtonClick(e) {
-    if(e.srcElement.getAttribute("id") === "Start") {
+    if (e.srcElement.getAttribute("id") === "Start") {
+
         timeInterval = setInterval(function () {
-            view.updateGrid();
-            generationsModel.getNextGeneration();
-            view.displayMessage("Live cells: " + generationsModel.liveCellsCounter);
+            if (controller.checkGameOver()) {
+                view.displayMessage("Game over!");
+                view.updateGrid();
+                clearInterval(timeInterval);
+            } else {
+                view.updateGrid();
+                generationsModel.getNextGeneration();
+                view.displayMessage("Live cells: " + generationsModel.liveCellsCounter);
+            }
         }, 100);
         e.srcElement.setAttribute("id", "Stop");
     } else {
