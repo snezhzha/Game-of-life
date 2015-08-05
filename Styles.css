@@ -18,9 +18,12 @@ td {
     background-color: cornflowerblue;
     border-color: cornflowerblue;
 }
-#Start {
-    display: block;
-    margin: auto;
+form {
+    text-align: center;
+}
+#Start{
+
+    margin: 5px;
 }
 #messageArea {
     text-align: center;

@@ -114,6 +114,8 @@ var view = {
         x = e.srcElement.getAttribute("id");
 
         generationsModel.currGeneration[y][x] = 1;
+        var startButton = document.getElementById("Start");
+        startButton.focus();
     },
 
     updateGrid: function () {
@@ -155,7 +157,6 @@ var controller = {
   }
 };
 
-
 window.onload = init;
 function init() {
     view.createGrid(view.gridSize, view.gridSize);
@@ -163,17 +164,29 @@ function init() {
     generationsModel.createCurrAndTmpGenerationContainers();
     view.addOnclickEventToCells();
     var startButton = document.getElementById("Start");
+    startButton.onkeydown = handleKeyDown;
     startButton.onclick = handleButtonClick;
 }
 
-function handleButtonClick() {
-    setInterval(function(){
-        view.updateGrid();
-        generationsModel.getNextGeneration();
-        view.displayMessage("Live cells: " + generationsModel.liveCellsCounter);
-    }, 100);
+function handleButtonClick(e) {
+    if(e.srcElement.getAttribute("id") === "Start") {
+        timeInterval = setInterval(function () {
+            view.updateGrid();
+            generationsModel.getNextGeneration();
+            view.displayMessage("Live cells: " + generationsModel.liveCellsCounter);
+        }, 100);
+        e.srcElement.setAttribute("id", "Stop");
+    } else {
+        e.srcElement.setAttribute("id", "Start");
+        clearInterval(timeInterval);
+    }
 }
 
-
+function handleKeyDown(e) {
+    if (e.keyCode === 13) {
+        e.srcElement.click();
+        return false;
+    }
+}
 
 
