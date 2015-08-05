@@ -1,29 +1,29 @@
 var generationsModel = {
-    gridSize: 5,
     liveCellsCounter: 0,
-    currGeneration: [
-        [0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0]
-    ],
-    tmpGeneration: [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0]
-    ],
-    createGridArray: function () {
+    currGeneration: [[]],
+    tmpGeneration: [[]],
+
+    createEmptyGridArray: function (size) {
         var arr = [];
-        for (var i = 0; i < this.gridSize; i++) {
-            for (var j = 0; j < this.gridSize; j++) {
-                arr[i][j] = "";
+        // Creates all lines:
+        for(var i=0; i < size; i++){
+            // Creates an empty line
+            arr.push([]);
+            // Adds cols to the empty line:
+            arr[i].push( new Array(size));
+            for(var j=0; j < size; j++){
+                // Initializes:
+                arr[i][j] = 0;
             }
         }
         return arr;
     },
+
+    createCurrAndTmpGenerationContainers: function() {
+        this.currGeneration = this.createEmptyGridArray(view.gridSize);
+        this.tmpGeneration = this.createEmptyGridArray(view.gridSize);
+    },
+
     getLiveNeighbours: function (x, y) {
         var liveCount = 0;
         liveCount += this.getCellState(x - 1, y - 1);
@@ -38,7 +38,7 @@ var generationsModel = {
     },
 
     getCellState: function (x, y) {
-        if (x < 0 || y < 0 || x >= this.gridSize || y >= this.gridSize) {
+        if (x < 0 || y < 0 || x >= view.gridSize || y >= view.gridSize) {
             return 0;
         } else if (this.currGeneration[x][y] === 1) {
             return 1;
@@ -55,6 +55,7 @@ var generationsModel = {
                 state = this.getCellState(x, y);
                 newState = 0;
                 if (state === 1) {
+
                     if (neighboursCount === 2 || neighboursCount === 3) {
                         newState = 1;
                     } else if (neighboursCount > 3 || neighboursCount <= 1) {
@@ -72,48 +73,107 @@ var generationsModel = {
         var tmp = this.currGeneration;
         this.currGeneration = this.tmpGeneration;
         this.tmpGeneration = tmp;
-    },
-
-    updateGrid: function () {
-        var table = document.getElementById("grid");
-        for (var i = 0; i < this.currGeneration.length; i++) {
-            for (var j = 0; j < this.currGeneration[i].length; j++) {
-                if (this.currGeneration[i][j] === 1) {
-                    table.rows[i].cells[j].setAttribute("class", "liveCell");
-                }
-            }
-        }
     }
 };
 
 var view = {
+    gridSize: 20,
+
     createGrid: function (rowsNum, colNum) {
         var table = document.createElement("table");
         table.setAttribute("id", "grid");
         var row, cell;
 
         for (var i = 0; i < rowsNum; i++) {
+
             row = table.insertRow(i);
+            row.setAttribute("id", i);
             for (var j = 0; j < colNum; j++) {
                 cell = row.insertCell(j);
+                cell.setAttribute("id", j)
             }
         }
         document.getElementById("playingField").appendChild(table);
     },
 
+    addOnclickEventToCells: function() {
+        var table = document.getElementById("grid");
+        for (var i = 0; i < generationsModel.currGeneration.length; i++) {
+            for (var j = 0; j < generationsModel.currGeneration[i].length; j++) {
+                table.rows[i].cells[j].onclick = this.handleClick;
+            }
+        }
+    },
+
+    handleClick: function(e) {
+        var x, y, cell = e.target, row;
+
+        cell.setAttribute("class", "liveCell");
+        row = cell.parentNode;
+        y = row.getAttribute("id");
+        x = e.srcElement.getAttribute("id");
+
+        generationsModel.currGeneration[y][x] = 1;
+    },
+
     updateGrid: function () {
         var table = document.getElementById("grid");
-        for (var i = 0; i < model.gridSize; i++) {
-
+        this.cleanGrid();
+        generationsModel.liveCellsCounter = 0;
+        for (var i = 0; i < generationsModel.currGeneration.length; i++) {
+            for (var j = 0; j < generationsModel.currGeneration[i].length; j++) {
+                if (generationsModel.currGeneration[i][j] === 1) {
+                    generationsModel.liveCellsCounter++;
+                    table.rows[i].cells[j].setAttribute("class", "liveCell");
+                }
+            }
         }
+    },
+
+    cleanGrid: function () {
+        var table = document.getElementById("grid");
+        for (var i = 0; i < generationsModel.tmpGeneration.length; i++) {
+            for (var j = 0; j < generationsModel.tmpGeneration[i].length; j++) {
+                if (generationsModel.tmpGeneration[i][j] === 1) {
+                    if (table.rows[i].cells[j].hasAttribute("class")) {
+                        table.rows[i].cells[j].removeAttribute("class", "liveCell");
+                    }
+                }
+            }
+        }
+    },
+
+    displayMessage: function(message) {
+        var  field = document.getElementById("messageArea");
+        field.innerHTML = message;
     }
 };
 
-        window.onload = init;
-        function init() {
-            view.createGrid(model.gridSize, model.gridSize);
-            model.updateGrid();
-        }
+var controller = {
+  checkGameOver: function(){
+
+  }
+};
+
+
+window.onload = init;
+function init() {
+    view.createGrid(view.gridSize, view.gridSize);
+    view.displayMessage("Hello! Draw the body, press Start and see what will be!");
+    generationsModel.createCurrAndTmpGenerationContainers();
+    view.addOnclickEventToCells();
+    var startButton = document.getElementById("Start");
+    startButton.onclick = handleButtonClick;
+}
+
+function handleButtonClick() {
+    setInterval(function(){
+        view.updateGrid();
+        generationsModel.getNextGeneration();
+        view.displayMessage("Live cells: " + generationsModel.liveCellsCounter);
+    }, 100);
+}
+
 
 
 
