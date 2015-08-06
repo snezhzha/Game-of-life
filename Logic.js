@@ -166,13 +166,17 @@ var controller = {
 window.onload = init;
 function init() {
     view.createGrid(view.gridSize, view.gridSize);
-    view.displayMessage("Hello! Draw the body, press Start and see what will be!");
-    generationsModel.createCurrAndTmpGenerationContainers();
-    view.addOnclickEventToCells();
+    resetGame();
 
     var startButton = document.getElementById("Start");
     startButton.onkeydown = handleKeyDown;
     startButton.onclick = handleButtonClick;
+}
+
+function resetGame() {
+    view.displayMessage("Hello! Draw the body, press Start and see what will be!");
+    generationsModel.createCurrAndTmpGenerationContainers();
+    view.addOnclickEventToCells();
 }
 
 function handleButtonClick(e) {
@@ -183,6 +187,9 @@ function handleButtonClick(e) {
                 view.displayMessage("Game over!");
                 view.updateGrid();
                 clearInterval(timeInterval);
+                e.srcElement.setAttribute("id", "Start");
+                setTimeout(function() {
+                    resetGame(); }, 3000);
             } else {
                 view.updateGrid();
                 generationsModel.getNextGeneration();
