@@ -105,10 +105,10 @@ View.prototype.createGrid = function () {
 
     for (var i = 0; i < this.gridSize; i++) {
         row = table.insertRow(i);
-        row.setAttribute("id", i);
+        row.setAttribute("id", i.toString());
         for (var j = 0; j < this.gridSize; j++) {
             cell = row.insertCell(j);
-            cell.setAttribute("id", j)
+            cell.setAttribute("id", j.toString());
         }
     }
     document.getElementById("playingField").appendChild(table);
