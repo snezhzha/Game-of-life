@@ -99,6 +99,7 @@ GenerationsModel.prototype.getNextGeneration = function () {
 
 var View = function (gridSize) {
     this.gridSize = gridSize;
+    this.timeInterval = null;
 };
 
 View.prototype.getGridSize = function () {
@@ -171,10 +172,7 @@ var Controller = function () {
 };
 
 Controller.prototype.checkGameOver = function (counter) {
-    if (counter === 0) {
-        return true;
-    }
-    return false;
+    return counter === 0;
 };
 
 window.onload = init;
@@ -200,12 +198,12 @@ function init() {
     startButton.onclick = function (e) {
         if (e.srcElement.getAttribute("id") === "Start") {
 
-            timeInterval = setInterval(function () {
+            MyView.timeInterval = setInterval(function () {
                 if (MyController.checkGameOver(MyGenerationsModel.getLiveCellsCounter())) {
                     MyView.displayMessage("Game over!");
 
                     MyView.updateGrid(MyGenerationsModel);
-                    clearInterval(timeInterval);
+                    clearInterval(MyView.timeInterval);
                     e.srcElement.setAttribute("id", "Start");
                     setTimeout(function () {
                         resetGame(MyView, MyGenerationsModel);
@@ -220,7 +218,7 @@ function init() {
             e.srcElement.setAttribute("id", "Stop");
         } else {
             e.srcElement.setAttribute("id", "Start");
-            clearInterval(timeInterval);
+            clearInterval(MyView.timeInterval);
         }
     };
 }
