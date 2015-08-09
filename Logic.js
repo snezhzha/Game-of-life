@@ -20,10 +20,6 @@ GenerationsModel.prototype.getCurrGeneration = function () {
     return this.currGeneration;
 };
 
-GenerationsModel.prototype.getTmpGeneration = function () {
-    return this.tmpGeneration;
-};
-
 GenerationsModel.prototype.createEmptyGridArray = function () {
     var arr = [];
     // Creates all lines:
@@ -100,10 +96,6 @@ GenerationsModel.prototype.getNextGeneration = function () {
 var View = function (gridSize) {
     this.gridSize = gridSize;
     this.timeInterval = null;
-};
-
-View.prototype.getGridSize = function () {
-    return this.gridSize;
 };
 
 View.prototype.createGrid = function () {
