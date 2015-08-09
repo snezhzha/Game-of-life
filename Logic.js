@@ -48,11 +48,15 @@ GenerationsModel.prototype.createCurrAndTmpGenerationContainers = function () {
 GenerationsModel.prototype.getCellState = function (x, y) {
     if (x < 0 || y < 0 || x >= this.arrSize || y >= this.arrSize) {
         return 0;
-    } else if (this.currGeneration[x][y] === 1) {
+    } else if (this.currGeneration[y][x] === 1) {
         return 1;
     } else {
         return 0;
     }
+};
+
+GenerationsModel.prototype.setCellState = function (x, y, state) {
+    this.currGeneration[y][x] = state;
 };
 
 GenerationsModel.prototype.getLiveNeighbours = function (x, y) {
@@ -70,26 +74,24 @@ GenerationsModel.prototype.getLiveNeighbours = function (x, y) {
 
 GenerationsModel.prototype.getNextGeneration = function () {
     var neighboursCount = 0, state, newState;
-    for (var y = 0; y < this.currGeneration.length; y++) {
-        for (var x = 0; x < this.currGeneration[y].length; x++) {
-            neighboursCount = this.getLiveNeighbours(x, y);
-            state = this.getCellState(x, y);
-            newState = 0;
-            if (state === 1) {
-
-                if (neighboursCount === 2 || neighboursCount === 3) {
-                    newState = 1;
-                } else if (neighboursCount > 3 || neighboursCount <= 1) {
-                    newState = 0;
-                }
-            } else {
-                if (neighboursCount === 3) {
-                    newState = 1;
-                }
+    var that = this;
+    iterate(this.currGeneration, function (x, y) {
+        neighboursCount = that.getLiveNeighbours(x, y);
+        state = that.getCellState(x, y);
+        newState = 0;
+        if (state === 1) {
+            if (neighboursCount === 2 || neighboursCount === 3) {
+                newState = 1;
+            } else if (neighboursCount > 3 || neighboursCount <= 1) {
+                newState = 0;
             }
-            this.tmpGeneration[x][y] = newState;
+        } else {
+            if (neighboursCount === 3) {
+                newState = 1;
+            }
         }
-    }
+        that.tmpGeneration[y][x] = newState;
+    });
     var tmp = this.currGeneration;
     this.currGeneration = this.tmpGeneration;
     this.tmpGeneration = tmp;
@@ -121,58 +123,41 @@ View.prototype.createGrid = function () {
 
 View.prototype.addOnclickEventToCells = function (generationsModel) {
     var table = document.getElementById("grid");
-    for (var i = 0; i < generationsModel.getCurrGeneration().length; i++) {
-        for (var j = 0; j < generationsModel.getCurrGeneration()[i].length; j++) {
-            table.rows[i].cells[j].onclick = function (e) {
-                var x, y, cell = e.target, row;
+    iterate(generationsModel.getCurrGeneration(), function (x, y) {
+        table.rows[y].cells[x].onclick = function (e) {
+            var x, y, cell = e.target, row;
 
-                cell.setAttribute("class", "liveCell");
-                row = cell.parentNode;
-                y = row.getAttribute("id");
-                x = e.srcElement.getAttribute("id");
+            cell.setAttribute("class", "liveCell");
+            row = cell.parentNode;
+            y = row.getAttribute("id");
+            x = e.srcElement.getAttribute("id");
 
-                generationsModel.getCurrGeneration()[y][x] = 1;
-                generationsModel.liveCellsCounter++;
-                var startButton = document.getElementsByTagName("input")[0];
-                startButton.focus();
-            }
+            generationsModel.setCellState(x, y, 1);
+            generationsModel.increaseLiveCellsCounter();
+            var startButton = document.getElementsByTagName("input")[0];
+            startButton.focus();
         }
-    }
+    });
 };
 
 View.prototype.updateGrid = function (generationsModel) {
     var table = document.getElementById("grid");
-    this.cleanGrid(generationsModel);
     generationsModel.setLiveCellsCounter(0);
 
-    for (var i = 0; i < generationsModel.currGeneration.length; i++) {
-        for (var j = 0; j < generationsModel.currGeneration[i].length; j++) {
-            if (generationsModel.currGeneration[i][j] === 1) {
-                generationsModel.increaseLiveCellsCounter();
-                table.rows[i].cells[j].setAttribute("class", "liveCell");
-            }
+    iterate(generationsModel.getCurrGeneration(), function (x, y) {
+        if (generationsModel.getCellState(x, y) === 1) {
+            generationsModel.increaseLiveCellsCounter();
+            table.rows[y].cells[x].setAttribute("class", "liveCell");
+        } else {
+            table.rows[y].cells[x].setAttribute("class", "");
         }
-    }
-};
-
-
-View.prototype.cleanGrid = function (generationsModel) {
-    var table = document.getElementById("grid");
-    for (var i = 0; i < generationsModel.getTmpGeneration().length; i++) {
-        for (var j = 0; j < generationsModel.getTmpGeneration()[i].length; j++) {
-            if (generationsModel.getTmpGeneration()[i][j] === 1) {
-                if (table.rows[i].cells[j].hasAttribute("class")) {
-                    table.rows[i].cells[j].removeAttribute("class", "liveCell");
-                }
-            }
-        }
-    }
+    });
 };
 
 function iterate(arr, testFunction) {
-    for (var i = 0; i < arr.length; i++) {
-        for (var j = 0; j < arr[i].length; j++) {
-            testFunction(arr[i][j], i, j);
+    for (var y = 0; y < arr.length; y++) {
+        for (var x = 0; x < arr[y].length; x++) {
+            testFunction(x, y);
         }
     }
 }
@@ -184,6 +169,7 @@ View.prototype.displayMessage = function (message) {
 
 var Controller = function () {
 };
+
 Controller.prototype.checkGameOver = function (counter) {
     if (counter === 0) {
         return true;
